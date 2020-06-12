@@ -1,5 +1,5 @@
 # squeak-customization
-
+#### Settings
 ```smalltalk
 TranscriptStream characterLimit: 10000000. "10MB"
 Workspace shouldStyle: true.
@@ -10,7 +10,10 @@ TextEditor autoEnclose: false.
 TextEditor encloseSelection: true.
 Utilities authorInitials: 'stlu'.
 (UserInterfaceTheme named: 'Community (dark)') apply.
+```
 
+#### Projects
+```smalltalk
 PreferenceWizardMorph new
 	installLatestUpdates;
 	installMetacello;
@@ -33,7 +36,14 @@ Metacello new
 	baseline: 'Squot';
 	repository: 'github://hpi-swa/Squot:develop/src';
 	load.
+```
 
+#### Modifications
+* save buttons in docking bar
+* tools attach to mouse even if opened by non-mouse events
+
+##### After Installation
+```smalltalk
 Project current
 	showWorldMainDockingBar: false;
 	showWorldMainDockingBar: true.
