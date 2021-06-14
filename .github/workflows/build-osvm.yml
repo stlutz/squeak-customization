@@ -60,7 +60,7 @@ jobs:
         run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
 
       - name: Install dependencies (Linux)
-        if: startsWith(matrix.arch, 'linux'
+        if: startsWith(matrix.arch, 'linux')
         run: ./scripts/ci/travis_install.sh
       
       - name: Run source tree version substitutions
