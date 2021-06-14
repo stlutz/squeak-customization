@@ -44,10 +44,10 @@ jobs:
       
       - name: Pack VM
         working-directory: ./products/
-        run: tar czf ${{ env.ARTIFACT_NAME }}.tar.gz ./sqcogspur64linuxht/
+        run: tar czf ${{ env.ARTIFACT_NAME }}.tar.gz *
       
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          with: ./products/
+          with: ./products/${{ env.ARTIFACT_NAME }}.tar.gz
