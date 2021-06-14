@@ -50,4 +50,12 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          with: ./products/${{ env.ARTIFACT_NAME }}.tar.gz
+          path: ./products/${{ env.ARTIFACT_NAME }}.tar.gz
+      
+      - name: Setup hpi-swa/smalltalkCI
+        uses: hpi-swa/setup-smalltalkCI@v1
+        with:
+          smalltalk-image: Squeak-trunk
+      
+      - name: Run tests
+        run: smalltalkci -s Squeak-trunk --vm ./products/sqcogspur64linuxht/bin/squeak ./tests/smalltalk.ston
