@@ -5,7 +5,7 @@ on:
 
 jobs:
   build:
-    name: ${{ runner.os }} ${{ matrix.bits }}bit
+    name: ${{ matrix.arch }}
     runs-on: ${{ matrix.dist }}
     
     strategy:
@@ -21,7 +21,7 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       FLAVOR: squeak.cog.spur
-      ARTIFACT_NAME: ${{ runner.os }}${{ matrix.bits }}
+      ARTIFACT_NAME: ${{ matrix.arch }}
 
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
