@@ -19,6 +19,7 @@ jobs:
     env:
       ARCH: ${{ github.event.inputs.arch }}
       FLAVOR: ${{ github.event.inputs.flavor }}
+      ARTIFACT_NAME: ${{ github.event.inputs.arch }}_${{ github.event.inputs.flavor }}
 
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
@@ -35,9 +36,15 @@ jobs:
         run: make configure
       
       - name: Building OpenSmalltalk VM
-        working-directory: ./build.${ARCH}/${FLAVOR}/build
+        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
         run: ./mvm
       
       - name: Packing OpenSmalltalk VM
-        run: |
-          tar czf ${FLAVOR}_${ARCH}.tar.gz products/sqcogspur64linuxht/
+        working-directory: ./products/
+        run: tar czf ${{ env.ARTIFACT_NAME }}.tar.gz ./sqcogspur64linuxht/echo "action_state=yellow"
+      
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          with: ./products/
