@@ -39,13 +39,17 @@ jobs:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
       
-      - name: Install dependencies (Windows)
+      - name: Install Cygwin (Windows)
         if: startsWith(matrix.arch, 'win')
         shell: bash
         run: |
           curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
           curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
-          call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+      
+      - name: Install dependencies (Windows)
+        if: startsWith(matrix.arch, 'win')
+        shell: cmd
+        run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
 
       - name: Install dependencies (Linux)
         if: startsWith(matrix.arch, 'linux')
