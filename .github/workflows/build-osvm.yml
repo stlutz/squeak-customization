@@ -15,11 +15,22 @@ jobs:
           - dist: ubuntu-latest
             arch: linux64x64
             bits: 64
+            shell: bash
+          - dist: windows-latest
+            arch: win64x64
+            bits: 64
+            mingw_arch: x86_64
+            cyg_root: cygwin64
+            shell: cygwin64\bin\bash
     
     env:
       ARCH: ${{ matrix.arch }}
       FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
+    
+    defaults:
+      run:
+        shell: ${{ matrix.shell }}
 
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
@@ -27,8 +38,17 @@ jobs:
         with:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+      
+      - name: Install dependencies (Windows)
+        if: startsWith(matrix.arch, 'win')
+        shell: bash
+        run: |
+          curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
+          curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
+          call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
 
-      - name: Install dependencies
+      - name: Install dependencies (Linux)
+        if: startsWith(matrix.arch, 'linux')
         run: ./scripts/ci/travis_install.sh
       
       - name: Run source tree version substitutions
@@ -43,8 +63,8 @@ jobs:
         run: echo "n" | ./mvm
       
       - name: Pack VM
-        working-directory: ./products/
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *
+        working-directory: ./products
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" * #./sqcogspur${{ matrix.bits }}linuxht/
       
       - name: Upload artifact
         uses: actions/upload-artifact@v2
@@ -59,4 +79,5 @@ jobs:
       
       - name: Run tests
         continue-on-error: true
+        if: startsWith(matrix.arch, 'linux')
         run: smalltalkci -s Squeak${{ matrix.bits }}-trunk --vm ./products/sqcogspur${{ matrix.bits }}linuxht/bin/squeak ./tests/smalltalk.ston
