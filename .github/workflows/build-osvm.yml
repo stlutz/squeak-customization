@@ -31,15 +31,18 @@ jobs:
       - name: Install OpenSmalltalk VM dependencies
         run: ./scripts/ci/travis_install.sh
       
-      - name: Running "make config" in platforms/unix/config ...
+      - name: Run source tree version substitutions
+        run: ./scripts/updateSCCSVersions
+      
+      - name: Run "make config" in platforms/unix/config ...
         working-directory: ./platforms/unix/config/
         run: make configure
       
-      - name: Building OpenSmalltalk VM
+      - name: Make VM
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
         run: ./mvm
       
-      - name: Packing OpenSmalltalk VM
+      - name: Pack VM
         working-directory: ./products/
         run: tar czf ${{ env.ARTIFACT_NAME }}.tar.gz ./sqcogspur64linuxht/echo "action_state=yellow"
       
