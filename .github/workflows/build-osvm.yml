@@ -44,7 +44,7 @@ jobs:
       
       - name: Pack VM
         working-directory: ./products/
-        run: tar czf ${{ env.ARTIFACT_NAME }}.tar.gz *
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *
       
       - name: Upload artifact
         uses: actions/upload-artifact@v2
