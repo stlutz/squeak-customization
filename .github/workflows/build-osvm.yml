@@ -9,14 +9,12 @@ jobs:
     runs-on: ${{ matrix.dist }}
     
     strategy:
+      fail-fast: false
       matrix:
         include:
           - dist: ubuntu-latest
             arch: linux64x64
             bits: 64
-          - dist: ubuntu-latest
-            arch: linux32x86
-            bits: 32
     
     env:
       ARCH: ${{ matrix.arch }}
