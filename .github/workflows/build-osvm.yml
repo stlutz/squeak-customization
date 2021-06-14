@@ -21,7 +21,7 @@ jobs:
             bits: 64
             mingw_arch: x86_64
             cyg_root: C:\cygwin64
-            shell: C:\cygwin64\bin\bash {0}
+            shell: bash {0}
     
     env:
       ARCH: ${{ matrix.arch }}
@@ -56,8 +56,10 @@ jobs:
       
       - name: Install dependencies (Windows)
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
-        shell: cmd
-        run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+        shell: powershell
+        run: |
+          call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+          echo "C:\cygwin\bin" >> $env:GITHUB_PATH
 
       - name: Install dependencies (Linux)
         if: startsWith(matrix.arch, 'linux')
@@ -75,16 +77,19 @@ jobs:
         run: echo "n" | ./mvm
       
       - name: Pack VM
+        continue-on-error: true
         working-directory: ./products
         run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" * #./sqcogspur${{ matrix.bits }}linuxht/
       
       - name: Upload artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
           path: ./products/${{ env.ARTIFACT_NAME }}.tar.gz
       
       - name: Setup hpi-swa/smalltalkCI
+        continue-on-error: true
         uses: hpi-swa/setup-smalltalkCI@v1
         with:
           smalltalk-image: Squeak${{ matrix.bits }}-trunk
