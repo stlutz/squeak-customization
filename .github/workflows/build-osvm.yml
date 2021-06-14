@@ -21,17 +21,12 @@ jobs:
             bits: 64
             mingw_arch: x86_64
             cyg_root: C:\cygwin64
-            shell: bash {0}
     
     env:
       ARCH: ${{ matrix.arch }}
       FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
     
-    defaults:
-      run:
-        shell: ${{ matrix.shell }}
-
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
         uses: actions/checkout@v2
@@ -49,7 +44,6 @@ jobs:
         
       - name: Install Cygwin (Windows)
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
-        shell: bash
         run: |
           curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
           curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
@@ -57,9 +51,11 @@ jobs:
       - name: Install dependencies (Windows)
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         shell: cmd
-        run: |
-          call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
-          echo "C:\cygwin\bin" >> $env:GITHUB_PATH
+        run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+      
+      - name: Add Cygwin to PATH
+        if: startsWith(matrix.arch, 'linux')
+        run: echo "${{ matrix.cyg_root }}\bin" >> $GITHUB_PATH
 
       - name: Install dependencies (Linux)
         if: startsWith(matrix.arch, 'linux')
