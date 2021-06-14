@@ -48,7 +48,7 @@ jobs:
           key: cygwin-${{ matrix.arch }}
         
       - name: Install Cygwin (Windows)
-        if: startsWith(matrix.arch, 'win')
+        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         shell: bash
         run: |
           curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
@@ -60,7 +60,7 @@ jobs:
         run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
 
       - name: Install dependencies (Linux)
-        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
+        if: startsWith(matrix.arch, 'linux'
         run: ./scripts/ci/travis_install.sh
       
       - name: Run source tree version substitutions
