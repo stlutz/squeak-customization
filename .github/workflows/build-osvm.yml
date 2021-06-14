@@ -27,6 +27,10 @@ jobs:
       FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
     
+    defaults:
+      run:
+        shell: bash
+    
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
         uses: actions/checkout@v2
