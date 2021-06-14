@@ -21,7 +21,7 @@ jobs:
             bits: 64
             mingw_arch: x86_64
             cyg_root: C:\cygwin64
-            shell: C:\cygwin64\bin\bash
+            shell: C:\cygwin64\bin\bash {0}
     
     env:
       ARCH: ${{ matrix.arch }}
@@ -39,6 +39,14 @@ jobs:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
       
+      - name: Reuse Cygwin from Cache (Windows)
+        id: cygwin-cache
+        if: startsWith(matrix.arch, 'win')
+        uses: actions/cache@v2
+        with:
+          path: ${{ matrix.cyg_root }}
+          key: cygwin-${{ matrix.arch }}
+        
       - name: Install Cygwin (Windows)
         if: startsWith(matrix.arch, 'win')
         shell: bash
@@ -47,12 +55,12 @@ jobs:
           curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
       
       - name: Install dependencies (Windows)
-        if: startsWith(matrix.arch, 'win')
+        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         shell: cmd
         run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
 
       - name: Install dependencies (Linux)
-        if: startsWith(matrix.arch, 'linux')
+        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         run: ./scripts/ci/travis_install.sh
       
       - name: Run source tree version substitutions
