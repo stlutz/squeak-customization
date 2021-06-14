@@ -56,7 +56,7 @@ jobs:
       
       - name: Install dependencies (Windows)
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
-        shell: powershell
+        shell: cmd
         run: |
           call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
           echo "C:\cygwin\bin" >> $env:GITHUB_PATH
