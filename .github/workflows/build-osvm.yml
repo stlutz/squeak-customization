@@ -12,16 +12,16 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - dist: ubuntu-latest
-            arch: linux64x64
-            bits: 64
-            shell: bash
+         # - dist: ubuntu-latest
+         #   arch: linux64x64
+         #   bits: 64
+         #   shell: bash
           - dist: windows-latest
             arch: win64x64
             bits: 64
             mingw_arch: x86_64
-            cyg_root: cygwin64
-            shell: cygwin64\bin\bash
+            cyg_root: C:\cygwin64
+            shell: C:\cygwin64\bin\bash
     
     env:
       ARCH: ${{ matrix.arch }}
