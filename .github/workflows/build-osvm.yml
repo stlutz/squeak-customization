@@ -40,7 +40,7 @@ jobs:
       
       - name: Make VM
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
-        run: echo "n" | ./mvm -f
+        run: echo "n" | ./mvm
       
       - name: Pack VM
         working-directory: ./products/
