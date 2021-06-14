@@ -32,13 +32,17 @@ jobs:
         shell: bash
     
     steps:
+      - name: "[Windows] Ensure correct line endings"
+        if: startsWith(matrix.arch, 'win')
+        run: git config --global core.autocrlf true
+        
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
         uses: actions/checkout@v2
         with:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
       
-      - name: Reuse Cygwin from Cache (Windows)
+      - name: "[Windows] Reuse Cygwin from Cache"
         id: cygwin-cache
         if: startsWith(matrix.arch, 'win')
         uses: actions/cache@v2
@@ -46,22 +50,22 @@ jobs:
           path: ${{ matrix.cyg_root }}
           key: cygwin-${{ matrix.arch }}
         
-      - name: Install Cygwin (Windows)
+      - name: "[Windows] Install Cygwin"
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         run: |
           curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
           curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
       
-      - name: Install dependencies (Windows)
+      - name: "[Windows] Install dependencies"
         if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
         shell: cmd
         run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
       
-      - name: Add Cygwin to PATH
+      - name: "[Windows] Add Cygwin to PATH"
         if: startsWith(matrix.arch, 'win')
         run: echo "${{ matrix.cyg_root }}\bin" >> $GITHUB_PATH
 
-      - name: Install dependencies (Linux)
+      - name: "[Linux] Install dependencies"
         if: startsWith(matrix.arch, 'linux')
         run: ./scripts/ci/travis_install.sh
       
