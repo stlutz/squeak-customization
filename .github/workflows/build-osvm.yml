@@ -1,0 +1,43 @@
+name: Build OpenSmallalk VM
+
+on:
+  workflow_dispatch:
+    inputs:
+      arch:
+        description: 'VM architecture. Must be linux64x64' # Can be one of linux64x64, linux32x86, win64x64, win32x86, macos64x64, macos32x86.
+        required: false
+        default: 'linux64x64'
+      flavor:
+        description: 'VM flavor. Must be squeak.cog.spur'
+        required: false
+        default: 'squeak.cog.spur'
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    
+    env:
+      ARCH: ${{ github.event.inputs.arch }}
+      FLAVOR: ${{ github.event.inputs.flavor }}
+
+    steps:
+      - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
+        uses: actions/checkout@v2
+        with:
+          repository: 'OpenSmalltalk/opensmalltalk-vm'
+          ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+
+      - name: Install OpenSmalltalk VM dependencies
+        run: ./scripts/ci/travis_install.sh
+      
+      - name: Running "make config" in platforms/unix/config ...
+        working-directory: ./platforms/unix/config/
+        run: make configure
+      
+      - name: Building OpenSmalltalk VM
+        working-directory: ./build.${ARCH}/${FLAVOR}/build
+        run: ./mvm
+      
+      - name: Packing OpenSmalltalk VM
+        run: |
+          tar czf ${FLAVOR}_${ARCH}.tar.gz products/sqcogspur64linuxht/
