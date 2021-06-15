@@ -29,7 +29,7 @@ jobs:
     
     defaults:
       run:
-        shell: bash
+        shell: bash --noprofile --norc -eo pipefail -o igncr {0}
     
     steps:
       - name: "[Windows] Ensure correct line endings"
