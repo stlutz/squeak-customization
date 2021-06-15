@@ -15,8 +15,8 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          #- arch: linux64x64
-          #  bits: 64
+          - arch: linux64x64
+            bits: 64
     
     env:
       ARCH: ${{ matrix.arch }}
