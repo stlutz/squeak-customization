@@ -26,16 +26,24 @@ jobs:
       ARCH: ${{ matrix.arch }}
       FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
+      WINDOWS: ${{ startsWith(matrix.arch, 'win') }}
+      LINUX: ${{ startsWith(matrix.arch, 'linux') }}
     
     defaults:
       run:
-        shell: bash --noprofile --norc -eo pipefail -o igncr {0}
+        shell: bash
     
     steps:
-      - name: "[Windows] Ensure correct line endings"
-        if: startsWith(matrix.arch, 'win')
-        run: git config --global core.autocrlf true
-        
+      - if: env.WINDOWS
+        run: echo "$Windows"
+      
+      - if: env.LINUX
+        run: echo "$Linux"
+      
+      #- name: "[Windows] Ensure correct line endings"
+      #  if: startsWith(matrix.arch, 'win')
+      #  run: git config --global core.autocrlf true
+      
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
         uses: actions/checkout@v2
         with:
@@ -72,13 +80,26 @@ jobs:
       - name: Run source tree version substitutions
         run: ./scripts/updateSCCSVersions
       
-      - name: Run "make config" in platforms/unix/config ...
+      - name: "[Linux] Run 'make config' in platforms/unix/config ..."
+        if: startsWith(matrix.arch, 'linux')
         working-directory: ./platforms/unix/config/
         run: make configure
       
-      - name: Make VM
+      - name: "[Windows] Remove Bochs plugins"
+        if: startsWith(matrix.arch, 'win')
+        run: sed -i 's/Bochs.* //g' plugins.ext
+      
+      - name: "[Linux] Make VM"
+        if: startsWith(matrix.arch, 'linux')
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
         run: echo "n" | ./mvm
+      
+      - name: "[Windows] Make VM"
+        if: startsWith(matrix.arch, 'windows')
+        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
+        run: |
+          ./mvm -f
+          mv ./build/vm ../../products/
       
       - name: Pack VM
         continue-on-error: true
