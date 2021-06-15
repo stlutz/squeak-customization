@@ -5,7 +5,7 @@ on:
 
 env:
   FLAVOR: squeak.cog.spur
-  PRODUCT_PATH: ${{ github.workspace }}/product/
+  PRODUCT_PATH: ${{ github.workspace }}/dist/
 
 jobs:
   linux-build:
@@ -86,12 +86,15 @@ jobs:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
       
+      - name: Set product path
+        run: echo "PRODUCT_PATH=$(readlink -f ./dist)" >> $GITHUB_ENV
+
       - name: Reuse Cygwin from Cache
         id: cygwin-cache
         uses: actions/cache@v2
         with:
           path: ${{ matrix.cyg_root }}
-          key: cygwin-${{ matrix.arch }}-1
+          key: cygwin-${{ matrix.arch }}-2
         
       - name: Install Cygwin
         if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
