@@ -7,7 +7,10 @@ on:
         description: Commit hash of opensmalltalk-vm
         required: true
         default: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
-      
+      squeak-uri:
+        description: Squeak trunk revision number
+        required: true
+        default: '20536'
 
 env:
   FLAVOR: squeak.cog.spur
@@ -22,11 +25,10 @@ jobs:
       matrix:
         include:
           - arch: linux64x64
-            bits: 64
     
     env:
       ARCH: ${{ matrix.arch }}
-      ARTIFACT_NAME: ${{ matrix.arch }}
+      ARTIFACT_NAME: ${{ matrix.arch }}-vm
       PRODUCT_PATH: ${{ github.workspace }}/dist/
     
     steps:
@@ -50,14 +52,14 @@ jobs:
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
         run: echo "n" | ./mvm
       
-      - name: Move VM
-        working-directory: ./products/sqcogspur${{ matrix.bits }}linuxht
-        run: mkdir -p ${{ env.PRODUCT_PATH }} && mv * ${{ env.PRODUCT_PATH }}
+      - name: Create VM archive
+        working-directory: ./products/
+        run: |
+          cd sqcogspur*
+          tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *
+          mv ${{ env.ARTIFACT_NAME }}.tar.gz ../../
       
-      - name: Pack VM
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" ${{ env.PRODUCT_PATH}}/*
-      
-      - name: Upload artifact
+      - name: Upload VM archive
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
@@ -72,13 +74,12 @@ jobs:
       matrix:
         include:
           - arch: win64x64
-            bits: 64
             mingw_arch: x86_64
             cyg_root: C:\cygwin64
     
     env:
       ARCH: ${{ matrix.arch }}
-      ARTIFACT_NAME: ${{ matrix.arch }}
+      ARTIFACT_NAME: ${{ matrix.arch }}-vm
     
     defaults:
       run:
@@ -99,7 +100,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ matrix.cyg_root }}
-          key: cygwin-${{ matrix.arch }}-3
+          key: cygwin-${{ matrix.arch }}-4
         
       - name: Install Cygwin
         if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
@@ -122,16 +123,11 @@ jobs:
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
         run: ./mvm -f
       
-      - name: Move VM
+      - name: Create VM archive
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/vm
-        run: mkdir -p ${{ env.PRODUCT_PATH }} && mv *.dll *.exe* ${{ env.PRODUCT_PATH }}
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *.dll Squeak.exe* SqueakConsole.exe* && mv ${{ env.ARTIFACT_NAME }}.tar.gz ../../../../
       
-      - name: Pack VM
-        continue-on-error: true
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" ${{ env.PRODUCT_PATH }}/*
-      
-      - name: Upload artifact
-        continue-on-error: true
+      - name: Upload VM archive
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
