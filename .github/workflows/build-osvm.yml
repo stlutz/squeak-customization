@@ -34,7 +34,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
-          ref: ${{ github.event.inputs. }}
+          ref: ${{ github.event.inputs.osvm-ref }}
       
       - name: Install dependencies
         run: ./scripts/ci/travis_install.sh
