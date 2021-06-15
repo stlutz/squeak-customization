@@ -83,7 +83,7 @@ jobs:
         run: echo "n" | ./mvm
       
       - name: "[Windows] Make VM"
-        if: startsWith(matrix.arch, 'windows')
+        if: startsWith(matrix.arch, 'win')
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
         run: |
           sed -i 's/Bochs.* //g' plugins.ext
