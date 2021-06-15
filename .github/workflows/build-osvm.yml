@@ -26,20 +26,12 @@ jobs:
       ARCH: ${{ matrix.arch }}
       FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
-      WINDOWS: ${{ startsWith(matrix.arch, 'win') }}
-      LINUX: ${{ startsWith(matrix.arch, 'linux') }}
     
     defaults:
       run:
         shell: bash
     
     steps:
-      - if: env.WINDOWS
-        run: echo "$Windows"
-      
-      - if: env.LINUX
-        run: echo "$Linux"
-      
       #- name: "[Windows] Ensure correct line endings"
       #  if: startsWith(matrix.arch, 'win')
       #  run: git config --global core.autocrlf true
@@ -85,10 +77,6 @@ jobs:
         working-directory: ./platforms/unix/config/
         run: make configure
       
-      - name: "[Windows] Remove Bochs plugins"
-        if: startsWith(matrix.arch, 'win')
-        run: sed -i 's/Bochs.* //g' plugins.ext
-      
       - name: "[Linux] Make VM"
         if: startsWith(matrix.arch, 'linux')
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
@@ -98,6 +86,7 @@ jobs:
         if: startsWith(matrix.arch, 'windows')
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
         run: |
+          sed -i 's/Bochs.* //g' plugins.ext
           ./mvm -f
           mv ./build/vm ../../products/
       
