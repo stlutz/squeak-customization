@@ -5,7 +5,6 @@ on:
 
 env:
   FLAVOR: squeak.cog.spur
-  PRODUCT_PATH: ${{ env.GITHUB_WORKSPACE }}/product/
 
 jobs:
   linux-build:
@@ -22,6 +21,7 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       ARTIFACT_NAME: ${{ matrix.arch }}
+      PRODUCT_PATH: ${{ env.GITHUB_WORKSPACE }}/product/
     
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
@@ -74,6 +74,7 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       ARTIFACT_NAME: ${{ matrix.arch }}
+      PRODUCT_PATH: ${{ env.GITHUB_WORKSPACE }}/product/
     
     defaults:
       run:
