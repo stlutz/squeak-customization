@@ -3,28 +3,83 @@ name: Build OpenSmallalk VM
 on:
   workflow_dispatch:
 
+env:
+  FLAVOR: squeak.cog.spur
+
 jobs:
-  build:
+  linux-build:
     name: ${{ matrix.arch }}
-    runs-on: ${{ matrix.dist }}
+    runs-on: ubuntu-latest
     
     strategy:
       fail-fast: false
       matrix:
         include:
-         # - dist: ubuntu-latest
-         #   arch: linux64x64
-         #   bits: 64
-         #   shell: bash
-          - dist: windows-latest
-            arch: win64x64
+          - arch: linux64x64
+            bits: 64
+    
+    env:
+      ARCH: ${{ matrix.arch }}
+      ARTIFACT_NAME: ${{ matrix.arch }}
+    
+    steps:
+      - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
+        uses: actions/checkout@v2
+        with:
+          repository: 'OpenSmalltalk/opensmalltalk-vm'
+          ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+      
+      - name: Install dependencies
+        run: ./scripts/ci/travis_install.sh
+      
+      - name: Run source tree version substitutions
+        run: ./scripts/updateSCCSVersions
+      
+      - name: Run 'make config' in platforms/unix/config ...
+        working-directory: ./platforms/unix/config/
+        run: make configure
+      
+      - name: Make VM
+        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
+        run: echo "n" | ./mvm
+      
+      - name: Pack VM
+        continue-on-error: true
+        working-directory: ./products
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" ./sqcogspur${{ matrix.bits }}linuxht/
+      
+      - name: Upload artifact
+        continue-on-error: true
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.ARTIFACT_NAME }}
+          path: ./products/${{ env.ARTIFACT_NAME }}.tar.gz
+      
+      - name: Setup hpi-swa/smalltalkCI
+        continue-on-error: true
+        uses: hpi-swa/setup-smalltalkCI@v1
+        with:
+          smalltalk-image: Squeak${{ matrix.bits }}-trunk
+      
+      - name: Run tests
+        continue-on-error: true
+        run: smalltalkci -s Squeak${{ matrix.bits }}-trunk --vm ./products/sqcogspur${{ matrix.bits }}linuxht/bin/squeak ./tests/smalltalk.ston
+
+  windows-build:
+    name: ${{ matrix.arch }}
+    runs-on: windows-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: win64x64
             bits: 64
             mingw_arch: x86_64
             cyg_root: C:\cygwin64
     
     env:
       ARCH: ${{ matrix.arch }}
-      FLAVOR: squeak.cog.spur
       ARTIFACT_NAME: ${{ matrix.arch }}
     
     defaults:
@@ -42,51 +97,33 @@ jobs:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
           ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
       
-      - name: "[Windows] Reuse Cygwin from Cache"
+      - name: Reuse Cygwin from Cache
         id: cygwin-cache
-        if: startsWith(matrix.arch, 'win')
         uses: actions/cache@v2
         with:
           path: ${{ matrix.cyg_root }}
           key: cygwin-${{ matrix.arch }}
         
-      - name: "[Windows] Install Cygwin"
-        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
+      - name: Install Cygwin
+        if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
         run: |
           curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
           curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
       
-      - name: "[Windows] Install dependencies"
-        if: ${{ startsWith(matrix.arch, 'win') && !steps.cygwin-cache.outputs.cache-hit }}
+      - name: Install dependencies
+        if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
         shell: cmd
         run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
       
-      - name: "[Windows] Add Cygwin to PATH"
-        if: startsWith(matrix.arch, 'win')
+      - name: Add Cygwin to PATH
         run: echo "${{ matrix.cyg_root }}\bin" >> $GITHUB_PATH
 
-      - name: "[Linux] Install dependencies"
-        if: startsWith(matrix.arch, 'linux')
-        run: ./scripts/ci/travis_install.sh
-      
       - name: Run source tree version substitutions
         run: ./scripts/updateSCCSVersions
       
-      - name: "[Linux] Run 'make config' in platforms/unix/config ..."
-        if: startsWith(matrix.arch, 'linux')
-        working-directory: ./platforms/unix/config/
-        run: make configure
-      
-      - name: "[Linux] Make VM"
-        if: startsWith(matrix.arch, 'linux')
-        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/
-        run: echo "n" | ./mvm
-      
-      - name: "[Windows] Make VM"
-        if: startsWith(matrix.arch, 'win')
+      - name: Make VM
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
         run: |
-          sed -i 's/Bochs.* //g' plugins.ext
           ./mvm -f
           mv ./build/vm ../../products/
       
@@ -107,8 +144,3 @@ jobs:
         uses: hpi-swa/setup-smalltalkCI@v1
         with:
           smalltalk-image: Squeak${{ matrix.bits }}-trunk
-      
-      - name: Run tests
-        continue-on-error: true
-        if: startsWith(matrix.arch, 'linux')
-        run: smalltalkci -s Squeak${{ matrix.bits }}-trunk --vm ./products/sqcogspur${{ matrix.bits }}linuxht/bin/squeak ./tests/smalltalk.ston
