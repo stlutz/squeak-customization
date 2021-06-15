@@ -75,8 +75,7 @@ jobs:
         shell: bash
     
     steps:
-      #- name: "[Windows] Ensure correct line endings"
-      #  if: startsWith(matrix.arch, 'win')
+      #- name: Ensure correct line endings
       #  run: git config --global core.autocrlf true
       
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
@@ -111,17 +110,17 @@ jobs:
       
       - name: Make VM
         working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
-        run: >-
-          ./mvm -f
-          mv ./build/vm ../../products/
+        run: ./mvm -f
+      
+      - name: Move VM
+        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
+        run: mv ./build/vm ../../products/
       
       - name: Pack VM
-        continue-on-error: true
         working-directory: ./products
         run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" * #./sqcogspur${{ matrix.bits }}linuxht/
       
       - name: Upload artifact
-        continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
