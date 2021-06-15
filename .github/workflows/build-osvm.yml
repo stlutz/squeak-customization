@@ -2,10 +2,15 @@ name: Build OpenSmallalk VM
 
 on:
   workflow_dispatch:
+    inputs:
+      osvm-ref:
+        description: Commit hash of opensmalltalk-vm
+        required: true
+        default: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+      
 
 env:
   FLAVOR: squeak.cog.spur
-  PRODUCT_PATH: ${{ github.workspace }}/dist/
 
 jobs:
   linux-build:
@@ -22,13 +27,14 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       ARTIFACT_NAME: ${{ matrix.arch }}
+      PRODUCT_PATH: ${{ github.workspace }}/dist/
     
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
         uses: actions/checkout@v2
         with:
           repository: 'OpenSmalltalk/opensmalltalk-vm'
-          ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+          ref: ${{ github.event.inputs. }}
       
       - name: Install dependencies
         run: ./scripts/ci/travis_install.sh
@@ -49,14 +55,13 @@ jobs:
         run: mkdir -p ${{ env.PRODUCT_PATH }} && mv * ${{ env.PRODUCT_PATH }}
       
       - name: Pack VM
-        working-directory: ${{ env.PRODUCT_PATH }}
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" ${{ env.PRODUCT_PATH}}/*
       
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.PRODUCT_PATH}}/${{ env.ARTIFACT_NAME }}.tar.gz
+          path: ${{ env.ARTIFACT_NAME }}.tar.gz
 
   windows-build:
     name: ${{ matrix.arch }}
@@ -94,7 +99,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ matrix.cyg_root }}
-          key: cygwin-${{ matrix.arch }}-2
+          key: cygwin-${{ matrix.arch }}-3
         
       - name: Install Cygwin
         if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
@@ -122,11 +127,12 @@ jobs:
         run: mkdir -p ${{ env.PRODUCT_PATH }} && mv *.dll *.exe* ${{ env.PRODUCT_PATH }}
       
       - name: Pack VM
-        working-directory: ${{ env.PRODUCT_PATH }}
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *
+        continue-on-error: true
+        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" ${{ env.PRODUCT_PATH }}/*
       
       - name: Upload artifact
+        continue-on-error: true
         uses: actions/upload-artifact@v2
         with:
           name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.PRODUCT_PATH}}/${{ env.ARTIFACT_NAME }}.tar.gz
+          path: ${{ env.ARTIFACT_NAME }}.tar.gz
