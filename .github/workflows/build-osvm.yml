@@ -7,8 +7,8 @@ on:
         description: Commit hash of opensmalltalk-vm
         required: true
         default: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
-      squeak-uri:
-        description: Squeak trunk revision number
+      squeak-revision:
+        description: Squeak trunk revision
         required: true
         default: '20536'
 
@@ -16,8 +16,8 @@ env:
   FLAVOR: squeak.cog.spur
 
 jobs:
-  linux-build:
-    name: ${{ matrix.arch }}
+  build-linux-vm:
+    name: ${{ matrix.arch }}-vm
     runs-on: ubuntu-latest
     
     strategy:
@@ -29,7 +29,6 @@ jobs:
     env:
       ARCH: ${{ matrix.arch }}
       ARTIFACT_NAME: ${{ matrix.arch }}-vm
-      PRODUCT_PATH: ${{ github.workspace }}/dist/
     
     steps:
       - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
@@ -65,70 +64,115 @@ jobs:
           name: ${{ env.ARTIFACT_NAME }}
           path: ${{ env.ARTIFACT_NAME }}.tar.gz
 
-  windows-build:
-    name: ${{ matrix.arch }}
-    runs-on: windows-latest
+  # build-windows-vm:
+  #   name: ${{ matrix.arch }}-vm
+  #   runs-on: windows-latest
+    
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       include:
+  #         - arch: win64x64
+  #           mingw_arch: x86_64
+  #           cyg_root: 'C:\cygwin64'
+    
+  #   env:
+  #     ARCH: ${{ matrix.arch }}
+  #     ARTIFACT_NAME: ${{ matrix.arch }}-vm
+    
+  #   defaults:
+  #     run:
+  #       shell: bash
+    
+  #   steps:
+  #     - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
+  #       uses: actions/checkout@v2
+  #       with:
+  #         repository: 'OpenSmalltalk/opensmalltalk-vm'
+  #         ref: ${{ github.event.inputs.osvm-ref }}
+
+  #     - name: Reuse Cygwin from Cache
+  #       id: cygwin-cache
+  #       uses: actions/cache@v2
+  #       with:
+  #         path: ${{ matrix.cyg_root }}
+  #         key: cygwin-${{ matrix.arch }}-4
+        
+  #     - name: Install Cygwin
+  #       if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
+  #       run: |
+  #         curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
+  #         curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
+      
+  #     - name: Install dependencies
+  #       if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
+  #       shell: cmd
+  #       run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+      
+  #     - name: Add Cygwin to PATH
+  #       run: echo "${{ matrix.cyg_root }}\bin" >> $GITHUB_PATH
+
+  #     - name: Run source tree version substitutions
+  #       run: ./scripts/updateSCCSVersions
+      
+  #     - name: Make VM
+  #       working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
+  #       run: ./mvm -f
+      
+  #     - name: Create VM archive
+  #       working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/vm
+  #       run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *.dll Squeak.exe* SqueakConsole.exe* && mv ${{ env.ARTIFACT_NAME }}.tar.gz ../../../../
+      
+  #     - name: Upload VM archive
+  #       uses: actions/upload-artifact@v2
+  #       with:
+  #         name: ${{ env.ARTIFACT_NAME }}
+  #         path: ${{ env.ARTIFACT_NAME }}.tar.gz
+  
+  setup-linux-bundle:
+    name: ${{ matrix.arch }}-bundle
+    needs: [ build-linux-vm ]
+    runs-on: ubuntu-latest
     
     strategy:
       fail-fast: false
       matrix:
         include:
-          - arch: win64x64
-            mingw_arch: x86_64
-            cyg_root: C:\cygwin64
-    
-    env:
-      ARCH: ${{ matrix.arch }}
-      ARTIFACT_NAME: ${{ matrix.arch }}-vm
+          - arch: linux64x64
+            bits: 64
     
     defaults:
       run:
         shell: bash
     
+    env:
+      REVISION: ${{ github.event.inputs.squeak-revision }}
+
     steps:
-      - name: Checkout repository OpenSmalltalk/opensmalltalk-vm
-        uses: actions/checkout@v2
+      - name: Download VM archive
+        uses: actions/download-artifact@v2
         with:
-          repository: 'OpenSmalltalk/opensmalltalk-vm'
-          ref: '9f1b4644e7396e473bd9bb4cf67f8a9d5a4e11d6'
+          name: ${{ matrix.arch }}-vm
+          path: vm.tar.gz
       
-      - name: Set product path
-        run: echo "PRODUCT_PATH=$(readlink -f ./dist)" >> $GITHUB_ENV
-
-      - name: Reuse Cygwin from Cache
-        id: cygwin-cache
-        uses: actions/cache@v2
-        with:
-          path: ${{ matrix.cyg_root }}
-          key: cygwin-${{ matrix.arch }}-4
-        
-      - name: Install Cygwin
-        if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
+      - name: Download Squeak image and sources
         run: |
-          curl -fsSL --retry 4 -m 600 -o "setup-x86.exe" "http://cygwin.com/setup-x86.exe"
-          curl -fsSL --retry 4 -m 600 -o "setup-x86_64.exe" "http://cygwin.com/setup-x86_64.exe"
+          curl -o squeak.zip http://files.squeak.org/trunk/Squeak6.0alpha-${{ env.REVISION }}-${{ matrix.bits }}bit/Squeak6.0alpha-{{ env.REVISION }}-${{ matrix.bits }}bit.zip
+          curl -o SqueakV50.sources.gz http://files.squeak.org/sources_files/SqueakV50.sources.gz
       
-      - name: Install dependencies
-        if: ${{ !steps.cygwin-cache.outputs.cache-hit }}
-        shell: cmd
-        run: call scripts/installCygwin.bat ${{ matrix.mingw_arch }} ${{ matrix.cyg_root }}
+      - name: Extract to bundle
+        run: |
+          mkdir -p bundle
+          unzip -d bundle squeak.zip
+          gzip -c -d SqueakV50.sources.gz > bundle/SqueakV50.sources
+          tar --extract --gzip --file="vm.tar.gz" --directory="bundle"
       
-      - name: Add Cygwin to PATH
-        run: echo "${{ matrix.cyg_root }}\bin" >> $GITHUB_PATH
-
-      - name: Run source tree version substitutions
-        run: ./scripts/updateSCCSVersions
+      - name: Compress bundle
+        working-directory: bundle
+        run: tar --create --gzip --file="${{ matrix.arch }}-bundle.tar.gz" *
       
-      - name: Make VM
-        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/
-        run: ./mvm -f
-      
-      - name: Create VM archive
-        working-directory: ./build.${{ env.ARCH }}/${{ env.FLAVOR }}/build/vm
-        run: tar --create --gzip --file="${{ env.ARTIFACT_NAME }}.tar.gz" *.dll Squeak.exe* SqueakConsole.exe* && mv ${{ env.ARTIFACT_NAME }}.tar.gz ../../../../
-      
-      - name: Upload VM archive
+      - name: Upload bundle
         uses: actions/upload-artifact@v2
         with:
-          name: ${{ env.ARTIFACT_NAME }}
-          path: ${{ env.ARTIFACT_NAME }}.tar.gz
+          name: ${{ matrix.arch }}-bundle
+          path: bundle/${{ matrix.arch }}-bundle.tar.gz
