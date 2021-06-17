@@ -153,7 +153,6 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: ${{ matrix.arch }}-vm
-          path: vm.tar.gz
       
       - name: Download Squeak image and sources
         run: |
