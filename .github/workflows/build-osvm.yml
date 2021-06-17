@@ -157,7 +157,7 @@ jobs:
       
       - name: Download Squeak image and sources
         run: |
-          curl -o squeak.zip http://files.squeak.org/trunk/Squeak6.0alpha-${{ env.REVISION }}-${{ matrix.bits }}bit/Squeak6.0alpha-{{ env.REVISION }}-${{ matrix.bits }}bit.zip
+          curl -o squeak.zip http://files.squeak.org/trunk/Squeak6.0alpha-${{ env.REVISION }}-${{ matrix.bits }}bit/Squeak6.0alpha-${{ env.REVISION }}-${{ matrix.bits }}bit.zip
           curl -o SqueakV50.sources.gz http://files.squeak.org/sources_files/SqueakV50.sources.gz
       
       - name: Extract to bundle
