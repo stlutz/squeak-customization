@@ -164,7 +164,7 @@ jobs:
           mkdir -p bundle
           unzip -d bundle squeak.zip
           gzip -c -d SqueakV50.sources.gz > bundle/SqueakV50.sources
-          tar --extract --gzip --file="vm.tar.gz" --directory="bundle"
+          tar --extract --gzip --file="${{ matrix.arch }}-vm.tar.gz" --directory="bundle"
       
       - name: Compress bundle
         working-directory: bundle
