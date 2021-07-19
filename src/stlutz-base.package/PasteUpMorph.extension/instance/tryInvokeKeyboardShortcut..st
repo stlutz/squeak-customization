@@ -1,4 +1,4 @@
-*stlutz
+*stlutz-base-override
 tryInvokeKeyboardShortcut: aKeyboardEvent
 
 	aKeyboardEvent commandKeyPressed ifFalse: [^ self].
@@ -9,7 +9,7 @@ tryInvokeKeyboardShortcut: aKeyboardEvent
 		[$O] -> [self findAMonticelloBrowser].
 		[$P] -> [self findAPreferencesPanel: aKeyboardEvent].
 		"[$Z] -> [ChangeList browseRecentLog]."
-		[$S] -> [Smalltalk snapshot: true andQuit: false].
+		[$S] -> [Smalltalk snapshot: true andQuit: false]. "save image with Ctrl+Shift+S"
 	} otherwise: [^ self "no hit"].
 	
 	aKeyboardEvent ignore "hit!".

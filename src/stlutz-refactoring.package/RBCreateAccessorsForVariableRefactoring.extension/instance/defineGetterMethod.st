@@ -1,4 +1,4 @@
-*stlutz
+*stlutz-refactoring-override
 defineGetterMethod
 	| selector definingClass |
 	definingClass := self definingClass.

@@ -1,4 +1,4 @@
-*Stlutz
+*stlutz-base
 saveButtonsOn: aDockingBar
 
 	| saveButton saveNewVersionButton |

@@ -1,4 +1,4 @@
-*stlutz
+*stlutz-base
 recompileAll
 
 	self withAllSubclassesDo: [:cls |

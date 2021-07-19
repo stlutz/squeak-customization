@@ -1,4 +1,4 @@
-*Stlutz-override
+*stlutz-base-override
 fillDockingBar: aDockingBar 
 	"Private - fill the given docking bar"
 	
