@@ -43,6 +43,12 @@ Metacello new
 #### Modifications
 * save buttons in docking bar
 * tools attach to mouse even if opened by non-mouse events
+* save Squeak image by pressing `Ctrl+Shift+S`
+* various utility methods
+	* `Behavior >> recompileAll`
+	* `Object >> log:`
+* change `RefactoringBrowser`s accessor generation to be in line with Squeak's
+
 
 ##### After Installation
 ```smalltalk
