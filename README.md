@@ -48,6 +48,7 @@ Metacello new
 	* `Behavior >> recompileAll`
 	* `Object >> log:`
 * change `RefactoringBrowser`s accessor generation to be in line with Squeak's
+* ask for confirmation on annoying / destructive text editor shortcuts (`spawn` & `cancel`)
 
 
 ##### After Installation
