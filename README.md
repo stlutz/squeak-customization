@@ -44,6 +44,7 @@ Metacello new
 * save buttons in docking bar
 * tools attach to mouse even if opened by non-mouse events
 * save Squeak image by pressing `Ctrl+Shift+S`
+* in text editors, browse stores into the selected variable by pressing `Ctrl+Shift+M`
 * various utility methods
 	* `Behavior >> recompileAll`
 	* `Object >> log:`
