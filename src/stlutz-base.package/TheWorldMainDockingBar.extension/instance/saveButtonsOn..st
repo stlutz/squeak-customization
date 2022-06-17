@@ -7,9 +7,9 @@ saveButtonsOn: aDockingBar
 		actionSelector: #saveImage;
 		vResizing: #spaceFill;
 		width: 120.
-	saveNewVersionButton := (SimpleButtonMorph newWithLabel: 'Save Image As ...')
+	saveNewVersionButton := (SimpleButtonMorph newWithLabel: 'Save New Image')
 		target: self;
-		actionSelector: #saveImageAs;
+		actionSelector: #saveTimestampedImage;
 		vResizing: #spaceFill;
 		width: 120.
 	aDockingBar
