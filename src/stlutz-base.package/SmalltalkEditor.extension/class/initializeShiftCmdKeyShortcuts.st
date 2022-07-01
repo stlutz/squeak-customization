@@ -16,7 +16,7 @@ initializeShiftCmdKeyShortcuts
 		$m	storesIntoIt:
 		$s	invokePrettyPrint:
 		$t	displayIfTrue:
-		$v	pasteInitials:
+		$v	pasteEscaped:
 		$w	methodNamesContainingIt:
 	).
 	1 to: cmds size by: 2 do: [ :i |
