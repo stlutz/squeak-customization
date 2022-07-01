@@ -8,7 +8,7 @@ initializeShiftCmdKeyShortcuts
 		$a	argAdvance:
 		$b	browseItHere:
 		$d	debugIt:
-		$e	methodStringsContainingIt:
+		$e	methodSourceContainingIt:
 		$f	displayIfFalse:
 		$g	fileItIn:
 		$i	exploreIt:
