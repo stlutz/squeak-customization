@@ -1,0 +1,14 @@
+{
+	"category" : "stlutz-utils",
+	"classinstvars" : [
+		 ],
+	"classvars" : [
+		 ],
+	"commentStamp" : "",
+	"instvars" : [
+		 ],
+	"name" : "MyUtils",
+	"pools" : [
+		 ],
+	"super" : "Object",
+	"type" : "normal" }
